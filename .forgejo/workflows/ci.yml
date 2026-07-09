@@ -1,0 +1,55 @@
+name: CI
+enable-email-notifications: true
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+
+    env:
+      MIX_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restore source mtimes
+        uses: https://github.com/chetan/git-restore-mtime-action@v2
+
+      - name: Install OTP and Elixir
+        uses: https://github.com/erlef/setup-beam@v1
+        id: elixir
+        with:
+          version-file: ".tool-versions"
+          version-type: strict
+
+      - name: Cache mix deps
+        uses: actions/cache@v5
+        env:
+          cache-name: deps_test
+        with:
+          path: deps
+          key: ${{ runner.os }}-${{ steps.elixir.outputs.otp-version }}-${{ steps.elixir.outputs.elixir-version }}-${{ env.cache-name }}-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock'))}}
+
+      - name: Cache build
+        uses: actions/cache@v5
+        env:
+          cache-name: build_test
+        with:
+          path: _build
+          key: ${{ runner.os }}-${{ steps.elixir.outputs.otp-version }}-${{ steps.elixir.outputs.elixir-version }}-${{ env.cache-name }}-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock'))}}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-${{ steps.elixir.outputs.otp-version }}-${{ steps.elixir.outputs.elixir-version }}-${{ env.cache-name }}-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock'))}}-
+            ${{ runner.os }}-${{ steps.elixir.outputs.otp-version }}-${{ steps.elixir.outputs.elixir-version }}-${{ env.cache-name }}-
+
+      - run: mix deps.get
+      - run: mix format --check-formatted
+      - run: mix compile --warnings-as-errors
+      - run: mix test
