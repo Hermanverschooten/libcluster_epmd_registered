@@ -60,8 +60,18 @@ defmodule Cluster.Strategy.EpmdRegistered do
 
   @impl true
   def init([state]) do
+    # Connect in a continuation rather than synchronously in init: the epmd
+    # sweep (:erl_epmd.names/1) does a TCP connect per host, and an
+    # unreachable/firewalled host blocks on the kernel connect timeout
+    # (~127s). Doing it here would hold up the whole supervision tree — and
+    # the HTTP endpoint — until it returns. Returning first lets boot proceed.
+    {:ok, state, {:continue, :connect}}
+  end
+
+  @impl true
+  def handle_continue(:connect, state) do
     connect_registered(state)
-    {:ok, state, timeout(state)}
+    {:noreply, state, timeout(state)}
   end
 
   @impl true
