@@ -24,3 +24,6 @@ libcluster_epmd_registered-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# Claude Code local config and generated agent skills
+.claude/
