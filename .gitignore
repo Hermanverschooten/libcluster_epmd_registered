@@ -27,3 +27,6 @@ libcluster_epmd_registered-*.tar
 
 # Claude Code local config and generated agent skills
 .claude/
+
+# mise: tool versions are committed in mise.toml; local env/secrets are not
+mise.local.toml

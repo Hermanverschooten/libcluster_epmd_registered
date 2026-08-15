@@ -27,7 +27,7 @@ jobs:
         uses: https://github.com/erlef/setup-beam@v1
         id: elixir
         with:
-          version-file: ".tool-versions"
+          version-file: "mise.toml"
           version-type: strict
 
       - name: Cache mix deps
