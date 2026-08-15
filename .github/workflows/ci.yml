@@ -1,5 +1,4 @@
 name: CI
-enable-email-notifications: true
 
 on:
   push:
@@ -21,10 +20,10 @@ jobs:
           fetch-depth: 0
 
       - name: Restore source mtimes
-        uses: https://github.com/chetan/git-restore-mtime-action@v2
+        uses: chetan/git-restore-mtime-action@v2
 
       - name: Install OTP and Elixir
-        uses: https://github.com/erlef/setup-beam@v1
+        uses: erlef/setup-beam@v1
         id: elixir
         with:
           version-file: "mise.toml"
